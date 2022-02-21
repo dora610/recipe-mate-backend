@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1= title
+  form(action="/api/recipe" method="post" enctype="multipart/form-data")
+    label(for="name") Name
+    input(type="text" name="name" value="chicken rolls")
+    label(for="description") description
+    input(type="text" name="description" value="sfnlsolc asdjpSDFASD")
+    label(for="cookTime") Cooking time
+    input(type="number" name="cookTime")
+    label(for="preparationTime") Prep time
+    input(type="number" name="preparationTime")
+    label(for="type") Type
+    select(name="type" id="type" value="veg") 
+      option(value="veg") veg 
+      option(value="non-veg") Non veg 
+    label(for="recipe-pic") Photo
+    input(type="file" name="photo" id="")
+    input(type="submit" value="Add recipe")

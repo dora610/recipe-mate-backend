@@ -1,0 +1,10 @@
+exit: true
+ignore:
+  # - 'test/adminRecipe-test.js'
+  # - 'test/adminRouteTest.js'
+  # - 'test/authTest.js'
+  # - 'test/heathCheck.js'
+  - 'test/recipeFieldTest.js'
+require:
+  - 'test/fixtures.cjs'
+  - 'test/hooks.js'
