@@ -59,13 +59,13 @@ const handleCloudinaryImageUpload = async (filepath) => {
         type: 'upload',
         eager: [
           { aspect_ratio: '1:1', gravity: 'auto', width: 800, crop: 'fill' },
-          {
+          /* {
             aspect_ratio: '1:1',
             gravity: 'face:center',
             quality: 'auto:good',
             width: 200,
             crop: 'thumb',
-          },
+          }, */
         ],
       }
     );
@@ -184,7 +184,7 @@ exports.createRecipe = catchErrors(async (req, res, next) => {
     public_id,
     secure_url,
     square: eager[0].secure_url,
-    thumbnail: eager[1].secure_url,
+    // thumbnail: eager[1].secure_url,
   };
 
   try {
@@ -235,7 +235,7 @@ exports.updateRecipe = catchErrors(async (req, res, next) => {
       public_id,
       secure_url,
       square: eager[0].secure_url,
-      thumbnail: eager[1].secure_url,
+      // thumbnail: eager[1].secure_url,
     };
   }
 
@@ -295,4 +295,15 @@ exports.toggleSavedRecipe = catchErrors(async (req, res) => {
   await req.recipe.save();
 
   res.json({ status: 'success' });
+});
+
+exports.searchRecipe = catchErrors(async (req, res) => {
+  const searchTerm = req.query['name'];
+  const searchTermRegExp = new RegExp(searchTerm, 'i');
+  // TODO: enable text search, with name and desc
+  const recipeList = await Recipe.find({ name: searchTermRegExp })
+    .limit(6)
+    .sort({ updatedAt: -1 })
+    .select('name');
+  res.json(recipeList);
 });

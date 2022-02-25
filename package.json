@@ -2,9 +2,6 @@
   "name": "recipe-mate",
   "version": "1.0.1",
   "private": true,
-  "engines": {
-    "node": "16.x"
-  },
   "scripts": {
     "start": "nodemon ./bin/www",
     "prod": "node ./bin/www",
