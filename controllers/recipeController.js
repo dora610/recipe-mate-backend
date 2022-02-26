@@ -26,6 +26,7 @@ const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
       'photo.square',
       'createdBy',
       'savedby',
+      'updatedAt',
     ];
   }
 
@@ -305,5 +306,8 @@ exports.searchRecipe = catchErrors(async (req, res) => {
     .limit(6)
     .sort({ updatedAt: -1 })
     .select('name');
-  res.json(recipeList);
+
+  setTimeout(() => {
+    res.json(recipeList);
+  }, 3000);
 });
