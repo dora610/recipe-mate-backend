@@ -137,5 +137,15 @@ userSchema.method({
 
 // TODO: unable to utilize the plugin
 userSchema.plugin(beautifyUnique);
+// Alternative
+// Handler **must** take 3 parameters: the error that occurred, the document
+// in question, and the `next()` function
+/* schema.post('save', function(error, doc, next) {
+  if (error.name === 'MongoServerError' && error.code === 11000) {
+    next(new Error('There was a duplicate key error'));
+  } else {
+    next();
+  }
+}); */
 
 module.exports = mongoose.model('User', userSchema);

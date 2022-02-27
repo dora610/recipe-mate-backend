@@ -2,7 +2,6 @@ let recipe1 = {
   name: 'Tofu',
   description: 'Yummy chocolate brownies for sweet tooth',
   ingredients: ['Flour', 'Egg', 'Chocolate syrup', 'Cheese', 'Choco chip'],
-  rating: 4,
   type: 'non-veg',
   preparationTime: 15,
   cookTime: 30,
@@ -12,7 +11,6 @@ let recipe1 = {
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex perferendis consequatur, assumenda, nemo maiores tempore eaque saepe sunt asperiores in labore dolore commodi quod quas."",""Lorem ipsum dolor sit amet.',
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex perferendis consequatur, assumenda, nemo maiores tempore eaque saepe sunt asperiores in labore dolore commodi quod quas."",""Lorem ipsum dolor sit amet.',
   ],
-  calories: 300,
   photo: {
     contentType: 'image/jpeg',
     fileName: 'ed157d9985551203d5c286400',
@@ -27,7 +25,6 @@ let recipe2 = {
   description:
     'A single pot platter. Loved by every indian. There are many varieties of it.',
   ingredients: ['Flour', 'Egg', 'Chocolate syrup', 'Cheese', 'Choco chip'],
-  rating: 5,
   type: 'non-veg',
   preparationTime: 45,
   cookTime: 60,
@@ -37,7 +34,6 @@ let recipe2 = {
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex perferendis consequatur, assumenda, nemo maiores tempore eaque saepe sunt asperiores in labore dolore commodi quod quas."",""Lorem ipsum dolor sit amet.',
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex perferendis consequatur, assumenda, nemo maiores tempore eaque saepe sunt asperiores in labore dolore commodi quod quas."",""Lorem ipsum dolor sit amet.',
   ],
-  calories: 300,
   photo: {
     contentType: 'image/jpeg',
     fileName: 'ed157d9985551203d5c286400',
@@ -51,7 +47,6 @@ let recipe3 = {
   name: 'Pulao',
   description: 'Yummy for sweet tooth',
   ingredients: ['Milk', 'Chocolate syrup', 'Cheese', 'Choco chip'],
-  rating: 4,
   type: 'non-veg',
   preparationTime: 30,
   cookTime: 30,
@@ -60,7 +55,6 @@ let recipe3 = {
   steps: [
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex perferendis consequatur, assumenda, nemo maiores tempore eaque saepe sunt asperiores in labore dolore commodi quod quas."",""Lorem ipsum dolor sit amet.',
   ],
-  calories: 600,
   photo: {
     contentType: 'image/jpeg',
     fileName: 'ed157d9985551203d5c286400',

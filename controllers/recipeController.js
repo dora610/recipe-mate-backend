@@ -286,7 +286,6 @@ exports.toggleSavedRecipe = catchErrors(async (req, res) => {
   const isSavedRecipe = req.recipe.savedby.filter((id) =>
     id.equals(req.user._id)
   );
-  debug(isSavedRecipe);
   if (isSavedRecipe.length) {
     req.recipe.savedby.pull(req.user._id);
   } else {

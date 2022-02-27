@@ -17,11 +17,6 @@ const recipeSchema = new mongoose.Schema(
       type: [String],
       required: true,
     },
-    rating: {
-      type: Number,
-      enum: [-1, 1, 2, 3, 4, 5],
-      default: -1,
-    },
     type: {
       type: String,
       enum: ['veg', 'non-veg'],
@@ -47,9 +42,6 @@ const recipeSchema = new mongoose.Schema(
     steps: {
       type: [String],
       required: true,
-    },
-    calories: {
-      type: Number,
     },
     photo: {
       contentType: String,
@@ -94,6 +86,12 @@ recipeSchema.path('steps').validate({
   message: function (props) {
     return `${props.path} must have some value, but got noting`;
   },
+});
+
+recipeSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'recipe',
 });
 
 module.exports = mongoose.model('Recipe', recipeSchema);

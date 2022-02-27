@@ -25,6 +25,7 @@ const recipeRouter = require('./routes/recipeRoutes');
 const adminUserRouter = require('./routes/userRoutesAdmin');
 const adminRecipeRouter = require('./routes/recipeRoutesAdmin');
 const queryRouter = require('./routes/queryRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 // HTTP request logger middleware for node.js, we will take split/dual loggin approach
 // log only 4xx and 5xx responses to console
@@ -77,6 +78,7 @@ app.use('/api/recipe', recipeRouter);
 app.use('/api/admin/user', adminUserRouter);
 app.use('/api/admin/recipe', adminRecipeRouter);
 app.use('/api/search', queryRouter);
+app.use('/api/review', reviewRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

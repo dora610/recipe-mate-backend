@@ -1,10 +1,11 @@
 exit: true
 ignore:
-  # - 'test/adminRecipe-test.js'
-  # - 'test/adminRouteTest.js'
-  # - 'test/authTest.js'
-  # - 'test/heathCheck.js'
+  - 'test/adminRecipe-test.js'
+  - 'test/adminRouteTest.js'
+  - 'test/authTest.js'
+  - 'test/heathCheck.js'
   - 'test/recipeFieldTest.js'
+  # - 'test/reviewTest.js'
 require:
   - 'test/fixtures.cjs'
-  - 'test/hooks.js'
+  # - 'test/hooks.js'
