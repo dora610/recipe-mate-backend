@@ -62,6 +62,9 @@ const recipeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+recipeSchema.set('toObject', { virtuals: true });
+recipeSchema.set('toJSON', { virtuals: true });
+
 function arrayElementsValidator(arr) {
   if (Array.isArray(arr) && arr.length === 0) {
     return false;
@@ -93,5 +96,36 @@ recipeSchema.virtual('reviews', {
   localField: '_id',
   foreignField: 'recipe',
 });
+
+recipeSchema.statics.getAvgRating = function (id) {
+  return this.aggregate([
+    {
+      $match: {
+        _id: id,
+      },
+    },
+    {
+      $lookup: {
+        from: 'reviews',
+        localField: '_id',
+        foreignField: 'recipe',
+        as: 'reviews',
+      },
+    },
+    {
+      $unwind: {
+        path: '$reviews',
+      },
+    },
+    {
+      $group: {
+        _id: '$_id',
+        rating: {
+          $avg: '$reviews.rating',
+        },
+      },
+    },
+  ]);
+};
 
 module.exports = mongoose.model('Recipe', recipeSchema);

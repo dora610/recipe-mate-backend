@@ -30,7 +30,7 @@ const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
     ];
   }
 
-  let recipeListPromise = await Recipe.find({})
+  let recipeListPromise = Recipe.find({})
     .skip(offset)
     .limit(limit)
     .sort({ updatedAt: -1, name: 1 })
@@ -126,8 +126,10 @@ exports.getRecipeById = catchErrorsForParams(async (req, res, next, id) => {
   next();
 });
 
-exports.getRecipe = (req, res) =>
-  res.json({ status: 'Success', recipe: req.recipe });
+exports.getRecipe = catchErrors(async (req, res) => {
+  const aggr = await Recipe.getAvgRating(req.recipe._id);
+  res.json({ status: 'Success', recipe: req.recipe, rating: aggr[0].rating });
+});
 
 exports.getAllRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
