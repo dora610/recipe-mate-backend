@@ -38,12 +38,15 @@ const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
     .select(projection);
 
   const countPromise = Recipe.estimatedDocumentCount();
-  const [recipeList, count] = await Promise.all([
+  const aggregatePromise = Recipe.getAvgRatingsAll();
+
+  const [recipeList, count, ratings] = await Promise.all([
     recipeListPromise,
     countPromise,
+    aggregatePromise,
   ]);
 
-  return { recipeList, count };
+  return { recipeList, count, ratings };
 };
 
 const handleCloudinaryImageUpload = async (filepath) => {
@@ -127,8 +130,18 @@ exports.getRecipeById = catchErrorsForParams(async (req, res, next, id) => {
 });
 
 exports.getRecipe = catchErrors(async (req, res) => {
-  const aggr = await Recipe.getAvgRating(req.recipe._id);
-  res.json({ status: 'Success', recipe: req.recipe, rating: aggr[0].rating });
+  const ratingAggrPromise = Recipe.getAvgRating(req.recipe._id);
+  const reviewAggrPromise = Recipe.getMostRecentReviews(req.recipe._id);
+
+  const [ratings, reviews] = await Promise.all([
+    ratingAggrPromise,
+    reviewAggrPromise,
+  ]);
+  res.json({
+    recipe: req.recipe,
+    ratings,
+    reviews,
+  });
 });
 
 exports.getAllRecipes = catchErrors(async (req, res) => {
@@ -137,7 +150,7 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
   const offset = (page - 1) * limit;
 
   // TODO: take input form user for a specific path to be sorted in ascending or descending
-  const { recipeList, count } = await getRecipeAndCountFromDb(
+  const { recipeList, count, ratings } = await getRecipeAndCountFromDb(
     offset,
     limit,
     req?.user?.role === 1
@@ -150,7 +163,12 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
     throw new CustomError('Max. page limit reached');
   }
 
-  return res.json({ status: 'Success', recipes: recipeList, count });
+  return res.json({
+    status: 'Success',
+    recipes: recipeList,
+    count,
+    ratings,
+  });
 });
 
 exports.createRecipe = catchErrors(async (req, res, next) => {

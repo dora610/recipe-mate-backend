@@ -38,6 +38,6 @@ router.post(
   reqValidator,
   addReviewToRecipe
 );
-router.get('/:recipeId', getAllReviewsForRecipe);
+router.get('/', getAllReviewsForRecipe);
 
 module.exports = router;

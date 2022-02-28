@@ -15,10 +15,18 @@ exports.getReviewById = catchErrorsForParams(async (req, res, next, id) => {
 exports.getSingleReview = catchErrors(async (req, res) => res.json(req.review));
 
 exports.getAllReviewsForRecipe = catchErrors(async (req, res) => {
-  const reviews = await Review.find({ recipe: req.recipe._id })
+  const recipeId = req.query.recipe;
+  if (!recipeId) {
+    throw new CustomError('Invalid request', 400);
+  }
+  const recipes = await Recipe.findById(recipeId)
+    .populate({ path: 'reviews' })
+    .select('reviews');
+  res.json(recipes);
+  /* const reviews = await Review.find({ recipe: req.recipe._id })
     .populate({ path: 'author', select: 'fullName firstName lastName' })
     .sort({ updatedAt: -1 });
-  res.json(reviews);
+  res.json(reviews); */
 });
 
 exports.addReviewToRecipe = catchErrors(async (req, res) => {
