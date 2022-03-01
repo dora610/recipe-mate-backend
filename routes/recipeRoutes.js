@@ -16,6 +16,7 @@ const {
   isRecipeOwner,
   fetchSavedRecipes,
   toggleSavedRecipe,
+  fetchRecipesForUser,
 } = require('../controllers/recipeController');
 const { getUserById } = require('../controllers/authController');
 const debug = require('debug')('recipe-mate:recipe-router');
@@ -33,6 +34,8 @@ router
   .put(isRecipeOwner, formidableFileUploader, updateRecipe)
   .delete(isRecipeOwner, deleteRecipe);
 router.post('/', formidableFileUploader, createRecipe);
+
+router.get('/', fetchRecipesForUser);
 
 router.get('/savedrecipes/all', fetchSavedRecipes);
 router.put('/savedrecipes/:recipeId', toggleSavedRecipe);

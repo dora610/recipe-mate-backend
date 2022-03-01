@@ -128,8 +128,16 @@ recipeSchema.statics.getAvgRating = function (id) {
   ]);
 };
 
-recipeSchema.statics.getAvgRatingsAll = function () {
+recipeSchema.statics.getAvgRatingsAll = function (limit = 5) {
   return this.aggregate([
+    {
+      $sort: {
+        updatedAt: -1,
+      },
+    },
+    {
+      $limit: limit,
+    },
     {
       $lookup: {
         from: 'reviews',

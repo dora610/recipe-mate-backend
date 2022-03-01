@@ -18,7 +18,6 @@ const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
   if (!forAdmin) {
     projection = [
       'name',
-      'rating',
       'preparationTime',
       'cookTime',
       'type',
@@ -27,6 +26,7 @@ const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
       'createdBy',
       'savedby',
       'updatedAt',
+      'createdAt',
     ];
   }
 
@@ -63,13 +63,13 @@ const handleCloudinaryImageUpload = async (filepath) => {
         type: 'upload',
         eager: [
           { aspect_ratio: '1:1', gravity: 'auto', width: 800, crop: 'fill' },
-          /* {
+          {
             aspect_ratio: '1:1',
             gravity: 'face:center',
             quality: 'auto:good',
             width: 200,
             crop: 'thumb',
-          }, */
+          },
         ],
       }
     );
@@ -215,7 +215,7 @@ exports.createRecipe = catchErrors(async (req, res, next) => {
     public_id,
     secure_url,
     square: eager[0].secure_url,
-    // thumbnail: eager[1].secure_url,
+    thumbnail: eager[1].secure_url,
   };
 
   try {
@@ -266,7 +266,7 @@ exports.updateRecipe = catchErrors(async (req, res, next) => {
       public_id,
       secure_url,
       square: eager[0].secure_url,
-      // thumbnail: eager[1].secure_url,
+      thumbnail: eager[1].secure_url,
     };
   }
 
@@ -310,6 +310,23 @@ exports.deleteRecipe = catchErrors(async (req, res) => {
 exports.fetchSavedRecipes = catchErrors(async (req, res) => {
   const savedRecipesByUser = await Recipe.find({ savedby: req.user._id });
   res.json({ savedRecipesByUser });
+});
+
+exports.fetchRecipesForUser = catchErrors(async (req, res) => {
+  const userId = req.query.user;
+  const recipeList = await Recipe.find({ createdBy: userId })
+    .limit(5)
+    .sort({ updatedAt: -1 })
+    .select([
+      'name',
+      'type',
+      'course',
+      'photo.thumbnail',
+      'updatedAt',
+      'createdAt',
+    ]);
+
+  res.json({ recipeList });
 });
 
 exports.toggleSavedRecipe = catchErrors(async (req, res) => {
