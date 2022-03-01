@@ -28,6 +28,7 @@ router.param('recipeId', getRecipeById);
 router.param('userId', getUserById);
 
 router.get('/all', getAllRecipes);
+router.get('/saved/all', fetchSavedRecipes);
 router
   .route('/:recipeId')
   .get(param('recipeId').notEmpty().isString().trim(), reqValidator, getRecipe)
@@ -36,12 +37,6 @@ router
 router.post('/', formidableFileUploader, createRecipe);
 
 router.get('/', fetchRecipesForUser);
-
-router.get('/savedrecipes/all', fetchSavedRecipes);
 router.put('/savedrecipes/:recipeId', toggleSavedRecipe);
-
-/* router.get('/addrecipe', (req, res) => {
-  res.render('postform', { title: 'Add recipe' });
-}); */
 
 module.exports = router;

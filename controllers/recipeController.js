@@ -146,7 +146,7 @@ exports.getRecipe = catchErrors(async (req, res) => {
 
 exports.getAllRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
-  const limit = 7;
+  const limit = req.query.limit || 12;
   const offset = (page - 1) * limit;
 
   // TODO: take input form user for a specific path to be sorted in ascending or descending
@@ -175,7 +175,6 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
   });
 
   return res.json({
-    status: 'Success',
     recipes: recipeListWithReview,
     count,
   });
@@ -308,12 +307,53 @@ exports.deleteRecipe = catchErrors(async (req, res) => {
 });
 
 exports.fetchSavedRecipes = catchErrors(async (req, res) => {
-  const savedRecipesByUser = await Recipe.find({ savedby: req.user._id });
-  res.json({ savedRecipesByUser });
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 12;
+  let offset = (page - 1) * limit;
+
+  const recipePromise = Recipe.find({ savedby: req.user._id })
+    .limit(limit)
+    .skip(offset)
+    .sort({ updatedAt: -1, name: 1 })
+    .populate({ path: 'createdBy', select: 'fullName firstName lastName' })
+    .select([
+      'name',
+      'preparationTime',
+      'cookTime',
+      'type',
+      'course',
+      'photo.square',
+      'createdBy',
+      'savedby',
+      'updatedAt',
+      'createdAt',
+    ]);
+  const aggregatePromise = Recipe.getAvgRatingsAll();
+
+  const [savedRecipes, ratings] = await Promise.all([
+    recipePromise,
+    aggregatePromise,
+  ]);
+
+  let ratingsObj = {};
+  ratings.forEach(
+    ({ _id, rating }) => (ratingsObj[_id] = Math.trunc(rating * 100) / 100)
+  );
+
+  savedRecipesWithReview = savedRecipes.map((recipe) => {
+    let newRecipe = { rating: ratingsObj[recipe._id] };
+    Object.assign(newRecipe, recipe.toObject());
+    return newRecipe;
+  });
+
+  res.json({ recipes: savedRecipesWithReview });
 });
 
 exports.fetchRecipesForUser = catchErrors(async (req, res) => {
   const userId = req.query.user;
+  if (!userId) {
+    throw new CustomError('Invalid request', 4000);
+  }
   const recipeList = await Recipe.find({ createdBy: userId })
     .limit(5)
     .sort({ updatedAt: -1 })
@@ -346,6 +386,9 @@ exports.toggleSavedRecipe = catchErrors(async (req, res) => {
 
 exports.searchRecipe = catchErrors(async (req, res) => {
   const searchTerm = req.query['name'];
+  if (!searchTerm) {
+    throw new CustomError('Invalid request', 400);
+  }
   const searchTermRegExp = new RegExp(searchTerm, 'i');
   // TODO: enable text search, with name and desc
   const recipeList = await Recipe.find({ name: searchTermRegExp })
@@ -353,7 +396,5 @@ exports.searchRecipe = catchErrors(async (req, res) => {
     .sort({ updatedAt: -1 })
     .select('name');
 
-  setTimeout(() => {
-    res.json(recipeList);
-  }, 3000);
+  res.json(recipeList);
 });
