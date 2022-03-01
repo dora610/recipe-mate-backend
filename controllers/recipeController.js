@@ -163,11 +163,21 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
     throw new CustomError('Max. page limit reached');
   }
 
+  let ratingsObj = {};
+  ratings.forEach(
+    ({ _id, rating }) => (ratingsObj[_id] = Math.trunc(rating * 100) / 100)
+  );
+
+  recipeListWithReview = recipeList.map((recipe) => {
+    let newRecipe = { rating: ratingsObj[recipe._id] };
+    Object.assign(newRecipe, recipe.toObject());
+    return newRecipe;
+  });
+
   return res.json({
     status: 'Success',
-    recipes: recipeList,
+    recipes: recipeListWithReview,
     count,
-    ratings,
   });
 });
 
