@@ -2,10 +2,9 @@ const {
   isAuthenticated,
   isAuthorised,
 } = require('../controllers/authController');
-const { getRecipeById } = require('../controllers/recipeController');
 const {
   getReviewById,
-  getAllReviewsForRecipe,
+  getReviewsForRecipe,
   updateReview,
   deleteReview,
   getSingleReview,
@@ -38,6 +37,6 @@ router.post(
   reqValidator,
   addReviewToRecipe
 );
-router.get('/', getAllReviewsForRecipe);
+router.get('/', getReviewsForRecipe);
 
 module.exports = router;

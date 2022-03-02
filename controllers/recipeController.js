@@ -1,4 +1,4 @@
-const Recipe = require('../models/recipe');
+const Recipe = require('../models/Recipe');
 const debug = require('debug')('recipe-mate:recipe-controller');
 
 const cloudinary = require('cloudinary').v2;
@@ -11,43 +11,8 @@ const { catchErrorsForParams, catchErrors } = require('../utils/errorHandler');
 const CustomError = require('../utils/customError');
 
 const formidableConfig = require('../config/formidableConfig');
+const Review = require('../models/Review');
 cloudinary.config(cloudinaryConfig);
-
-const getRecipeAndCountFromDb = async (offset, limit, forAdmin = false) => {
-  let projection = [];
-  if (!forAdmin) {
-    projection = [
-      'name',
-      'preparationTime',
-      'cookTime',
-      'type',
-      'course',
-      'photo.square',
-      'createdBy',
-      'savedby',
-      'updatedAt',
-      'createdAt',
-    ];
-  }
-
-  let recipeListPromise = Recipe.find({})
-    .skip(offset)
-    .limit(limit)
-    .sort({ updatedAt: -1, name: 1 })
-    .populate('createdBy', 'fullName firstName lastName')
-    .select(projection);
-
-  const countPromise = Recipe.estimatedDocumentCount();
-  const aggregatePromise = Recipe.getAvgRatingsAll();
-
-  const [recipeList, count, ratings] = await Promise.all([
-    recipeListPromise,
-    countPromise,
-    aggregatePromise,
-  ]);
-
-  return { recipeList, count, ratings };
-};
 
 const handleCloudinaryImageUpload = async (filepath) => {
   try {
@@ -129,41 +94,50 @@ exports.getRecipeById = catchErrorsForParams(async (req, res, next, id) => {
   next();
 });
 
-exports.getRecipe = catchErrors(async (req, res) => {
-  const ratingAggrPromise = Recipe.getAvgRating(req.recipe._id);
-  const reviewAggrPromise = Recipe.getMostRecentReviews(req.recipe._id);
+exports.getRecipe = catchErrors(async (req, res) => res.json(req.recipe));
 
-  const [ratings, reviews] = await Promise.all([
-    ratingAggrPromise,
-    reviewAggrPromise,
-  ]);
-  res.json({
-    recipe: req.recipe,
-    ratings,
-    reviews,
-  });
-});
-
+// TODO: take input form user for a specific path to be sorted in ascending or descending
 exports.getAllRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
   const limit = req.query.limit || 12;
   const offset = (page - 1) * limit;
 
-  // TODO: take input form user for a specific path to be sorted in ascending or descending
-  const { recipeList, count, ratings } = await getRecipeAndCountFromDb(
-    offset,
-    limit,
-    req?.user?.role === 1
-  );
+  let projection = [];
+  if (req.user?.role !== 1) {
+    projection = [
+      'name',
+      'preparationTime',
+      'cookTime',
+      'type',
+      'course',
+      'photo.square',
+      'createdBy',
+      'savedby',
+      'updatedAt',
+      'createdAt',
+      'rating',
+    ];
+  }
+
+  let recipeListPromise = Recipe.find({})
+    .skip(offset)
+    .limit(limit)
+    .sort({ updatedAt: -1, name: 1 })
+    .populate('createdBy', 'fullName firstName lastName')
+    .select(projection);
+
+  const countPromise = Recipe.estimatedDocumentCount();
+
+  const [recipes, count] = await Promise.all([recipeListPromise, countPromise]);
 
   if (!count) {
     throw new CustomError('No recipe data available', 404);
   }
-  if (!recipeList.length) {
+  if (!recipes.length) {
     throw new CustomError('Max. page limit reached');
   }
 
-  let ratingsObj = {};
+  /* let ratingsObj = {};
   ratings.forEach(
     ({ _id, rating }) => (ratingsObj[_id] = Math.trunc(rating * 100) / 100)
   );
@@ -172,10 +146,10 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
     let newRecipe = { rating: ratingsObj[recipe._id] };
     Object.assign(newRecipe, recipe.toObject());
     return newRecipe;
-  });
+  }); */
 
-  return res.json({
-    recipes: recipeListWithReview,
+  res.json({
+    recipes,
     count,
   });
 });
@@ -327,26 +301,24 @@ exports.fetchSavedRecipes = catchErrors(async (req, res) => {
       'savedby',
       'updatedAt',
       'createdAt',
+      'rating',
     ]);
-  const aggregatePromise = Recipe.getAvgRatingsAll();
 
-  const [savedRecipes, ratings] = await Promise.all([
-    recipePromise,
-    aggregatePromise,
-  ]);
+  const countPromise = Recipe.countDocuments({ savedby: req.user._id });
 
-  let ratingsObj = {};
-  ratings.forEach(
-    ({ _id, rating }) => (ratingsObj[_id] = Math.trunc(rating * 100) / 100)
-  );
+  const [recipes, count] = await Promise.all([recipePromise, countPromise]);
 
-  savedRecipesWithReview = savedRecipes.map((recipe) => {
-    let newRecipe = { rating: ratingsObj[recipe._id] };
-    Object.assign(newRecipe, recipe.toObject());
-    return newRecipe;
+  if (!count) {
+    throw new CustomError('No recipe data available', 404);
+  }
+  if (!recipes.length) {
+    throw new CustomError('Max. page limit reached');
+  }
+
+  res.json({
+    recipes,
+    count,
   });
-
-  res.json({ recipes: savedRecipesWithReview });
 });
 
 exports.fetchRecipesForUser = catchErrors(async (req, res) => {
@@ -366,7 +338,7 @@ exports.fetchRecipesForUser = catchErrors(async (req, res) => {
       'createdAt',
     ]);
 
-  res.json({ recipeList });
+  res.json(recipeList);
 });
 
 exports.toggleSavedRecipe = catchErrors(async (req, res) => {

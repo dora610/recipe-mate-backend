@@ -58,6 +58,12 @@ const recipeSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    rating: {
+      type: 'Number',
+      min: 0,
+      max: 5,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
@@ -97,7 +103,7 @@ recipeSchema.virtual('reviews', {
   foreignField: 'recipe',
 });
 
-recipeSchema.statics.getAvgRating = function (id) {
+recipeSchema.statics.getRatingCount = function (id) {
   return this.aggregate([
     {
       $match: {
@@ -128,7 +134,7 @@ recipeSchema.statics.getAvgRating = function (id) {
   ]);
 };
 
-recipeSchema.statics.getAvgRatingsAll = function (limit = 5) {
+recipeSchema.statics.getRatingCountAll = function (limit = 5) {
   return this.aggregate([
     {
       $sort: {

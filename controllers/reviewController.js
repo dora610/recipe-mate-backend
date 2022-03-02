@@ -1,7 +1,8 @@
-const Recipe = require('../models/recipe');
-const Review = require('../models/review');
+const Recipe = require('../models/Recipe');
+const Review = require('../models/Review');
 const CustomError = require('../utils/customError');
 const { catchErrors, catchErrorsForParams } = require('../utils/errorHandler');
+const debug = require('debug')('recipe-mate:review-controller');
 
 exports.getReviewById = catchErrorsForParams(async (req, res, next, id) => {
   const review = await Review.findById(id);
@@ -14,19 +15,27 @@ exports.getReviewById = catchErrorsForParams(async (req, res, next, id) => {
 
 exports.getSingleReview = catchErrors(async (req, res) => res.json(req.review));
 
-exports.getAllReviewsForRecipe = catchErrors(async (req, res) => {
+exports.getReviewsForRecipe = catchErrors(async (req, res) => {
   const recipeId = req.query.recipe;
+  const limit = req.query.limit || 10;
+
   if (!recipeId) {
     throw new CustomError('Invalid request', 400);
   }
-  const recipes = await Recipe.findById(recipeId)
-    .populate({ path: 'reviews' })
-    .select('reviews');
-  res.json(recipes);
-  /* const reviews = await Review.find({ recipe: req.recipe._id })
-    .populate({ path: 'author', select: 'fullName firstName lastName' })
-    .sort({ updatedAt: -1 });
-  res.json(reviews); */
+  const recipe = await Recipe.findById(recipeId);
+  if (!recipe) {
+    throw new CustomError('No such recipe found', 404);
+  }
+
+  const ratingsCountPromise = Review.getRatingCount(recipe._id);
+  const reviewsPromise = Review.getMostRecentReviews(recipe._id, limit);
+
+  const [ratingsCount, reviews] = await Promise.all([
+    ratingsCountPromise,
+    reviewsPromise,
+  ]);
+
+  res.json({ ratingsCount, reviews });
 });
 
 exports.addReviewToRecipe = catchErrors(async (req, res) => {
@@ -49,6 +58,10 @@ exports.addReviewToRecipe = catchErrors(async (req, res) => {
   });
 
   res.json({ status: 'success', savedReview });
+
+  const avgRating = await Review.getAvgRating(recipe._id);
+  recipe['rating'] = avgRating[0].avg;
+  await recipe.save();
 });
 
 exports.updateReview = catchErrors(async (req, res) => {

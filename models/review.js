@@ -55,4 +55,103 @@ reviewSchema.pre('save', function (next) {
   throw new Error('Blank review error -no rating, no comments');
 });
 
+reviewSchema.statics.getRatingCount = function (id) {
+  return this.aggregate([
+    [
+      {
+        $match: {
+          recipe: id,
+        },
+      },
+      {
+        $group: {
+          _id: '$rating',
+          count: {
+            $count: {},
+          },
+          rating: {
+            $first: '$rating',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ],
+  ]);
+};
+
+reviewSchema.statics.getMostRecentReviews = function (id, limit) {
+  return this.aggregate([
+    [
+      {
+        $match: {
+          recipe: id,
+          rating: {
+            $exists: true,
+          },
+          comments: {
+            $exists: true,
+          },
+        },
+      },
+      {
+        $sort: {
+          updatedAt: -1,
+        },
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'author',
+        },
+      },
+      {
+        $unwind: {
+          path: '$author',
+        },
+      },
+      {
+        $project: {
+          rating: 1,
+          comments: 1,
+          author: {
+            firstName: 1,
+            lastName: 1,
+          },
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    ],
+  ]);
+};
+
+reviewSchema.statics.getAvgRating = function (id) {
+  return this.aggregate([
+    [
+      {
+        $match: {
+          recipe: id,
+        },
+      },
+      {
+        $group: {
+          _id: '$recipe',
+          avg: {
+            $avg: '$rating',
+          },
+        },
+      },
+    ],
+  ]);
+};
+
 module.exports = mongoose.model('Review', reviewSchema);
