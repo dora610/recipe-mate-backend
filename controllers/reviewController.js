@@ -60,7 +60,7 @@ exports.addReviewToRecipe = catchErrors(async (req, res) => {
   res.json({ status: 'success', savedReview });
 
   const avgRating = await Review.getAvgRating(recipe._id);
-  recipe['rating'] = avgRating[0].avg;
+  recipe['rating'] = Math.round(avgRating[0].avg * 100) / 100;
   await recipe.save();
 });
 
