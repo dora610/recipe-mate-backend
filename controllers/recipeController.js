@@ -122,7 +122,7 @@ exports.getAllRecipes = catchErrors(async (req, res) => {
   let recipeListPromise = Recipe.find({})
     .skip(offset)
     .limit(limit)
-    .sort({ updatedAt: -1, name: 1 })
+    .sort({ rating: -1, name: 1 })
     .populate('createdBy', 'fullName firstName lastName')
     .select(projection);
 
@@ -288,7 +288,6 @@ exports.fetchSavedRecipes = catchErrors(async (req, res) => {
   const recipePromise = Recipe.find({ savedby: req.user._id })
     .limit(limit)
     .skip(offset)
-    .sort({ updatedAt: -1, name: 1 })
     .populate({ path: 'createdBy', select: 'fullName firstName lastName' })
     .select([
       'name',
