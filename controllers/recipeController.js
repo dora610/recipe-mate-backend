@@ -99,7 +99,7 @@ exports.getRecipe = catchErrors(async (req, res) => res.json(req.recipe));
 // TODO: take input form user for a specific path to be sorted in ascending or descending
 exports.getAllRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
-  const limit = req.query.limit || 12;
+  const limit = req.query.limit ||5;
   const offset = (page - 1) * limit;
 
   let projection = [];
@@ -282,7 +282,7 @@ exports.deleteRecipe = catchErrors(async (req, res) => {
 
 exports.fetchSavedRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
-  const limit = req.query.limit || 12;
+  const limit = req.query.limit || 5;
   let offset = (page - 1) * limit;
 
   const recipePromise = Recipe.find({ savedby: req.user._id })
