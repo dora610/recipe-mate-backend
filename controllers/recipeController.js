@@ -332,7 +332,7 @@ exports.fetchRecipesForUser = catchErrors(async (req, res) => {
   const recipeListPromise = Recipe.find({ createdBy: userId })
     .skip(offset)
     .limit(limit)
-    .sort({ updatedAt: -1 })
+    .sort({ rating: -1, updatedAt: -1 })
     .populate('createdBy', 'fullName firstName lastName')
     .select([
       'name',
@@ -341,6 +341,7 @@ exports.fetchRecipesForUser = catchErrors(async (req, res) => {
       'type',
       'course',
       'photo.square',
+      'photo.thumbnail',
       'createdBy',
       'savedby',
       'updatedAt',
