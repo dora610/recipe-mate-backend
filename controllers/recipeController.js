@@ -99,7 +99,7 @@ exports.getRecipe = catchErrors(async (req, res) => res.json(req.recipe));
 // TODO: take input form user for a specific path to be sorted in ascending or descending
 exports.getAllRecipes = catchErrors(async (req, res) => {
   const page = req.query.page || 1;
-  const limit = req.query.limit ||5;
+  const limit = req.query.limit || 5;
   const offset = (page - 1) * limit;
 
   let projection = [];
@@ -325,7 +325,7 @@ exports.fetchRecipesForUser = catchErrors(async (req, res) => {
   if (!userId) {
     throw new CustomError('Invalid request', 4000);
   }
-  const recipeList = await Recipe.find({ createdBy: userId })
+  const recipeListPromise = Recipe.find({ createdBy: userId })
     .limit(5)
     .sort({ updatedAt: -1 })
     .select([
@@ -337,7 +337,21 @@ exports.fetchRecipesForUser = catchErrors(async (req, res) => {
       'createdAt',
     ]);
 
-  res.json(recipeList);
+  const countPromise = Recipe.count({ createdBy: userId });
+
+  const [recipes, count] = await Promise.all([recipeListPromise, countPromise]);
+
+  if (!count) {
+    throw new CustomError('No recipe data available', 404);
+  }
+  if (!recipes) {
+    throw new CustomError('Max. page limit reached');
+  }
+
+  res.json({
+    recipes,
+    count,
+  });
 });
 
 exports.toggleSavedRecipe = catchErrors(async (req, res) => {
