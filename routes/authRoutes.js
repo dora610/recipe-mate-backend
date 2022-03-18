@@ -7,6 +7,7 @@ const {
   isAuthenticated,
   isAuthorised,
   updatePassword,
+  getUserDetails,
 } = require('../controllers/authController');
 const { catchErrors, catchErrorsForParams } = require('../utils/errorHandler');
 const {
@@ -38,6 +39,7 @@ router.post(
 );
 
 router.get('/signout', catchErrors(signOut));
+router.get('/', isAuthenticated, isAuthorised, getUserDetails);
 
 router.put('/forgotpassword', catchErrors(forgotPassword));
 

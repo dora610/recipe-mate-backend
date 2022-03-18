@@ -5,7 +5,8 @@ ignore:
   - 'test/authTest.js'
   - 'test/heathCheck.js'
   - 'test/recipeFieldTest.js'
-  # - 'test/reviewTest.js'
+  - 'test/reviewTest.js'
+
 require:
   - 'test/fixtures.cjs'
   # - 'test/hooks.js'

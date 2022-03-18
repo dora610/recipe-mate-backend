@@ -164,3 +164,29 @@ exports.updatePassword = catchErrors(async (req, res) => {
 
   res.json({ status: 'Password successfully changed' });
 });
+
+exports.getUserDetails = catchErrors(async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .populate({ path: 'recipes', select: 'rating' })
+    .select({ firstName: 1, middleName: 1, lastName: 1, email: 1 });
+
+  if (!user) {
+    throw new CustomError('user not found', 404);
+  }
+
+  let recipeList = user.recipes;
+  let recipeCount = recipeList.length;
+  let totalRating = recipeList.reduce(
+    (prev, current) => prev + current.rating,
+    0
+  );
+  let avgRating = Math.round((totalRating / recipeCount) * 100) / 100;
+  res.json({
+    firstName: user.firstName,
+    middleName: user.middleName,
+    lastName: user.lastName,
+    email: user.email,
+    avgRating,
+    recipeCount,
+  });
+});

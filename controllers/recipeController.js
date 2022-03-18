@@ -322,19 +322,30 @@ exports.fetchSavedRecipes = catchErrors(async (req, res) => {
 
 exports.fetchRecipesForUser = catchErrors(async (req, res) => {
   const userId = req.query.user;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 5;
+  const offset = (page - 1) * limit;
+
   if (!userId) {
     throw new CustomError('Invalid request', 4000);
   }
   const recipeListPromise = Recipe.find({ createdBy: userId })
-    .limit(5)
+    .skip(offset)
+    .limit(limit)
     .sort({ updatedAt: -1 })
+    .populate('createdBy', 'fullName firstName lastName')
     .select([
       'name',
+      'preparationTime',
+      'cookTime',
       'type',
       'course',
-      'photo.thumbnail',
+      'photo.square',
+      'createdBy',
+      'savedby',
       'updatedAt',
       'createdAt',
+      'rating',
     ]);
 
   const countPromise = Recipe.count({ createdBy: userId });

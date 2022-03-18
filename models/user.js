@@ -77,6 +77,13 @@ userSchema
     return this.firstName + ' ' + this.lastName;
   });
 
+userSchema.virtual('recipes', {
+  ref: 'Recipe',
+  localField: '_id',
+  foreignField: 'createdBy',
+  // count: true,
+});
+
 userSchema.method({
   securePassword: function (plainTextPassword) {
     if (!plainTextPassword) return '';
